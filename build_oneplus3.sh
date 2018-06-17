@@ -14,9 +14,6 @@ prebuilts/misc/linux-x86/ccache/ccache -M 48G
 # un-comment below line, if you want to build with root baked in
 # export WITH_SU=true
 
-# microG build
-export RELEASE_TYPE=UNOFFICIAL-microG
-
 # Normalize build metadata
 export KBUILD_BUILD_USER=android
 export KBUILD_BUILD_HOST=localhost
