@@ -28,40 +28,26 @@ prebuilts/misc/linux-x86/ccache/ccache -M 48G
 # un-comment below line, if you want to build with root baked in
 # export WITH_SU=true
 
-# microG build
-export RELEASE_TYPE=UNOFFICIAL-microG
-
 # Normalize build metadata
 export KBUILD_BUILD_USER=android
 export KBUILD_BUILD_HOST=localhost
 
-# start build
-if [ "$TESTKEY" = true ] ; then
-    brunch oneplus3
+if [ "$TESTKEY" = false ] ; then
+  export OWN_KEYS_DIR=~/.android-certs
+  export RELEASE_TYPE=UNOFFICIAL-microG-signed
+
+  # We need symlinks to fake the existence of a testkey 
+  # for the selinux build process
+  if [ ! -e $OWN_KEYS_DIR/testkey.pk8 ] ; then
+    ln -s $OWN_KEYS_DIR/releasekey.pk8 $OWN_KEYS_DIR/testkey.pk8
+    echo "Symlink testkey.pk8 created"
+  fi
+  if [ ! -e $OWN_KEYS_DIR/testkey.x509.pem ] ; then
+    ln -s $OWN_KEYS_DIR/releasekey.x509.pem $OWN_KEYS_DIR/testkey.x509.pem
+    echo "Symlink testkey.x509.pem created"
+  fi
 else
-    # Variables
-    ROMDATE=`date +%Y%m%d`
-    ROMNAME="lineage-15.1-$ROMDATE-$RELEASE_TYPE-oneplus3-signed.zip"
-    # Dist target
-    rm -rf $OUT_DIR_COMMON_BASE/lin-15.1/dist
-    breakfast oneplus3
-    mka target-files-package dist
-    # Sign the apks
-    croot
-    ./build/tools/releasetools/sign_target_files_apks -o -d ~/.android-certs \
-        out/dist/*-target_files-*.zip \
-        out/dist/op3-signed-target_files.zip
-    # Create & sign OTA ZIP
-    ./build/tools/releasetools/ota_from_target_files -k ~/.android-certs/releasekey \
-        --block --backup=true \
-        out/dist/op3-signed-target_files.zip \
-        out/dist/op3-signed-ota_update.zip
-    # Sign OTA ZIP
-#    ./build/tools/releasetools/sign_zip.py -k ~/.android-certs/releasekey \
-#        out/dist/op3-signed-ota_update.zip \
-#        out/dist/op3-signed-ota_update-zipsgn.zip
-    # 'Bacon' target
-    ln -f out/dist/op3-signed-ota_update.zip out/target/product/oneplus3/$ROMNAME
-    md5sum out/target/product/oneplus3/$ROMNAME | sed "s|out/target/product/oneplus3/||" > out/target/product/oneplus3/$ROMNAME.md5sum
+  export RELEASE_TYPE=UNOFFICIAL-microG
 fi
+brunch oneplus3
 
