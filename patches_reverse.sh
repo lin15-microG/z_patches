@@ -20,6 +20,7 @@ TOPDIR=$PWD
 
 clear_set build/make
 clear_set vendor/lineage
+clear_set bootable/recovery-twrp
 
 cd $THISDIR
 

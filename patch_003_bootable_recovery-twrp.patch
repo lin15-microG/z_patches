@@ -1,0 +1,31 @@
+From 9113cea4a4a3f50d266d548027ef4ebabfb54331 Mon Sep 17 00:00:00 2001
+From: MSe1969 <mse1969@posteo.de>
+Date: Sun, 4 Nov 2018 20:59:36 +0100
+Subject: [PATCH] TWRP-Build work-around [2/2]
+
+To avoid the 'duplicate definition' error of 'struct epoll_event' when
+building TWRP with the TW_TARGET_USES_QCOM_BSP switch, the same definition
+in the Kernel's include/linux/eventpoll.h can be skipped.
+
+Change-Id: Ic3ba44a7a15aa994319de293d1ce25180679a23d
+---
+ minui/Android.mk | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/minui/Android.mk b/minui/Android.mk
+index cb56b739..16d10875 100644
+--- a/minui/Android.mk
++++ b/minui/Android.mk
+@@ -29,6 +29,9 @@ ifeq ($(TW_TARGET_USES_QCOM_BSP), true)
+   LOCAL_CFLAGS += -DMSM_BSP
+   LOCAL_SRC_FILES += graphics_overlay.cpp
+   ifeq ($(TARGET_PREBUILT_KERNEL),)
++    ifeq ($(TWRP_EPOLL_WORKAROUND), true)
++      LOCAL_CFLAGS += -DTWRP_EPOLL_WORKAROUND
++    endif
+     LOCAL_ADDITIONAL_DEPENDENCIES := $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr
+     LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include
+   else
+-- 
+2.11.0
+
