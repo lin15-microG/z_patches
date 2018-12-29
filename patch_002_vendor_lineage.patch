@@ -1,7 +1,7 @@
-From 0b5e5bd8b6400f68817e1255e04c19023efd6b95 Mon Sep 17 00:00:00 2001
+From 36ad886e5638fc75f96fc812e1c0c84372cb0eb2 Mon Sep 17 00:00:00 2001
 From: MSe1969 <mse1969@posteo.de>
-Date: Sun, 12 Aug 2018 13:27:29 +0200
-Subject: [PATCH] Different sign method in build script [2/2]
+Date: Sat, 29 Dec 2018 12:41:21 +0100
+Subject: [PATCH] Different sign method in build script & remove Updater
 
 The original method, as documented by Google / LineageOS, sometimes causes
 errors when executing the 'ota_from_target_files' python script.
@@ -11,18 +11,22 @@ of vendor/lineage and setting a symlink testkey.* => releasekey.* in the
 certs directory to allow selinux to build has been chosen, similar to
 the docker image in github.com/lineageos4microg.
 
+Further, the Updater apk is excluded from the build, as we don't have an
+official LineageOS build, hence this app does not provide any value.
+
 Change-Id: I4b8b26ef3f6d54f7d4ee1c570c1737779b6b8884
 ---
- config/common.mk | 7 +++++++
- 1 file changed, 7 insertions(+)
+ config/common.mk | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
 diff --git a/config/common.mk b/config/common.mk
-index a30fcf68..6cd9ea4a 100644
+index 23f19a16..6c07b6e0 100644
 --- a/config/common.mk
 +++ b/config/common.mk
-@@ -1,5 +1,12 @@
+@@ -3,6 +3,13 @@ $(call inherit-product-if-exists, vendor/extra/product.mk)
+ 
  PRODUCT_BRAND ?= LineageOS
-
+ 
 +# Sign with own key
 +ifneq ($(OWN_KEYS_DIR),)
 +PRODUCT_DEFAULT_DEV_CERTIFICATE := $(OWN_KEYS_DIR)/releasekey
@@ -31,8 +35,16 @@ index a30fcf68..6cd9ea4a 100644
 +endif
 +
  PRODUCT_BUILD_PROP_OVERRIDES += BUILD_UTC_DATE=0
-
+ 
  ifeq ($(PRODUCT_GMS_CLIENTID_BASE),)
---
+@@ -141,7 +148,6 @@ PRODUCT_PACKAGES += \
+     Jelly \
+     LockClock \
+     Trebuchet \
+-    Updater \
+     WallpaperPicker \
+     WeatherProvider
+ 
+-- 
 2.11.0
 
