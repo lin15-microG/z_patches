@@ -1,7 +1,8 @@
-From 36ad886e5638fc75f96fc812e1c0c84372cb0eb2 Mon Sep 17 00:00:00 2001
+From 88d1b348a2ba30b9296801f7c7c959c300faac90 Mon Sep 17 00:00:00 2001
 From: MSe1969 <mse1969@posteo.de>
 Date: Sat, 29 Dec 2018 12:41:21 +0100
-Subject: [PATCH] Different sign method in build script & remove Updater
+Subject: [PATCH] Different sign method in build script, remove Updater, allow
+ own name
 
 The original method, as documented by Google / LineageOS, sometimes causes
 errors when executing the 'ota_from_target_files' python script.
@@ -14,13 +15,16 @@ the docker image in github.com/lineageos4microg.
 Further, the Updater apk is excluded from the build, as we don't have an
 official LineageOS build, hence this app does not provide any value.
 
+Finally, the reset option to rename all unofficial builds to UNOFFICIAL is
+removed to allow a custom file name containing the expression 'signed'.
+
 Change-Id: I4b8b26ef3f6d54f7d4ee1c570c1737779b6b8884
 ---
- config/common.mk | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ config/common.mk | 13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
 
 diff --git a/config/common.mk b/config/common.mk
-index 23f19a16..6c07b6e0 100644
+index 23f19a16..5eda9db9 100644
 --- a/config/common.mk
 +++ b/config/common.mk
 @@ -3,6 +3,13 @@ $(call inherit-product-if-exists, vendor/extra/product.mk)
@@ -45,6 +49,18 @@ index 23f19a16..6c07b6e0 100644
      WallpaperPicker \
      WeatherProvider
  
+@@ -262,11 +268,6 @@ ifndef LINEAGE_BUILDTYPE
+     endif
+ endif
+ 
+-# Filter out random types, so it'll reset to UNOFFICIAL
+-ifeq ($(filter RELEASE NIGHTLY SNAPSHOT EXPERIMENTAL,$(LINEAGE_BUILDTYPE)),)
+-    LINEAGE_BUILDTYPE :=
+-endif
+-
+ ifdef LINEAGE_BUILDTYPE
+     ifneq ($(LINEAGE_BUILDTYPE), SNAPSHOT)
+         ifdef LINEAGE_EXTRAVERSION
 -- 
 2.11.0
 
