@@ -21,6 +21,7 @@ TOPDIR=$PWD
 clear_set build/make
 clear_set vendor/lineage
 clear_set bootable/recovery-twrp
+clear_set device/sony/common-caf
 
 cd $THISDIR
 
