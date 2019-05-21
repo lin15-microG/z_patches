@@ -1,0 +1,31 @@
+From 770d89c859fc5e6c59b88c8f271beeeff5003862 Mon Sep 17 00:00:00 2001
+From: Christian Oder <myself5@carbonrom.org>
+Date: Mon, 20 May 2019 21:42:16 +0200
+Subject: [PATCH] init_sony: Unmount /sbin on recovery boot
+
+* Forcefully unmount /sbin to fix an issue with Magisk
+
+Fixes topjohnwu/Magisk#1418
+
+Change-Id: I7f64c81e79cb11ce62d68fa1e5ebccee36549c26
+---
+ init/init_main.cpp | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/init/init_main.cpp b/init/init_main.cpp
+index f812800..256cccb 100644
+--- a/init/init_main.cpp
++++ b/init/init_main.cpp
+@@ -126,6 +126,9 @@ int main(int argc, char** argv)
+     // Boot to Recovery
+     if (recoveryBoot)
+     {
++        // Unmount /sbin to fix recovery boot with Magisk 19+
++        umount("/sbin");
++
+         // Recovery boot
+         write_string(BOOT_TXT, "RECOVERY BOOT", true);
+         init_board.introduce_recovery();
+-- 
+2.7.4
+
