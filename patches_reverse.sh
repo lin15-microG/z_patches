@@ -19,7 +19,6 @@ TOPDIR=$PWD
 
 
 clear_set build/make
-clear_set device/sony/common-caf
 
 cd $THISDIR
 
