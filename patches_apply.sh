@@ -20,11 +20,6 @@ echo "Patching $PWD (work-around for 'struct epoll_event' build error)"
 patch -p1 < $THISDIR/patch_003_bootable_recovery-twrp.patch
 cd $TOPDIR
 
-cd device/sony/common-caf
-echo "Patching $PWD (Fix Magisk 19+ recovery issue)"
-patch -p1 < $THISDIR/patch_004_device-sony-common.patch
-cd $TOPDIR
-
 cd $THISDIR
 
 
