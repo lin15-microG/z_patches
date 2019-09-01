@@ -1,0 +1,89 @@
+From be828dfde8a83fe13fa446ed0adb34cb6fb45f8b Mon Sep 17 00:00:00 2001
+From: Iris Chang <iris.chang@mediatek.com>
+Date: Fri, 19 Jan 2018 16:12:58 +0800
+Subject: [PATCH] CTS cases fail due to NE in SVOX TTS library
+
+Failed CTS cases:
+android.speech.tts.cts.TextToSpeechTest#testSpeak
+android.speech.tts.cts.TextToSpeechTest#testSpeakStop
+android.speech.tts.cts.TextToSpeechTest#testSynthesizeToFile
+
+We can also reproduce this NE by following steps:
+1. Go to Accessibility Settings
+2. Select Text to speech output
+3. Click play
+
+Analysis:
+Exception occurs due to calculation of
+picokpr_getAttrValArrInt32(...) is incorrect. The logic here
+intends to clear the MSB and return the rest of the bits. We
+found if library compiled in Android N environment the result
+of comparison operation is different from library compiled in
+Android O environment. In Android O, actual returne value doesn't
+process the value and returns as it is. This causes invalid
+pointer access and hence native exception due to segmentation fault.
+
+Solution: Changed to use bitwise shift instead.
+
+Bug: 64204643
+Test: After applying this patch, CTS cases can pass and exception
+can be fixed.
+
+Change-Id: Ife3137225ecf9667df62321472420fab6ab88d2e
+---
+ pico/lib/picokpr.c | 18 ++++--------------
+ 1 file changed, 4 insertions(+), 14 deletions(-)
+
+diff --git a/pico/lib/picokpr.c b/pico/lib/picokpr.c
+index 956ae39..01d3b0d 100644
+--- a/pico/lib/picokpr.c
++++ b/pico/lib/picokpr.c
+@@ -162,7 +162,7 @@ typedef struct kpr_subobj
+ 
+ static picoos_uint32 kpr_getUInt32(picoos_uint8 * p)
+ {
+-    return p[0] + 256*p[1] + 256*256*p[2] + 256*256*256*p[3];
++    return (p[0]) | (p[1] << 8) | (p[2] << 16) | (p[3] << 24);
+ }
+ 
+ 
+@@ -342,10 +342,7 @@ extern picokpr_LexCat picokpr_getLexCat(picokpr_Preproc preproc, picokpr_LexCatA
+ extern picoos_int32 picokpr_getAttrValArrInt32(picokpr_Preproc preproc, picokpr_AttrValArrOffset ofs)
+ {
+     picoos_uint8 * p = (picoos_uint8 *)&(((kpr_SubObj)preproc)->rAttrValArr[ofs]);
+-    picoos_uint32 c =              p[KPR_ATTRVAL_INT_OFS] +
+-                               256*p[KPR_ATTRVAL_INT_OFS+1] +
+-                           256*256*p[KPR_ATTRVAL_INT_OFS+2] +
+-                       256*256*256*p[KPR_ATTRVAL_INT_OFS+3];
++    picoos_uint32 c = kpr_getUInt32(&p[KPR_ATTRVAL_INT_OFS]);
+ 
+     if (c > KPR_MAX_INT32) {
+         return (c - KPR_MAX_INT32) - 1;
+@@ -399,10 +396,7 @@ extern picokpr_VarStrPtr picokpr_getOutItemStr(picokpr_Preproc preproc, picokpr_
+ extern picoos_int32 picokpr_getOutItemVal(picokpr_Preproc preproc, picokpr_OutItemArrOffset ofs)
+ {
+     picoos_uint8 * p = (picoos_uint8 *)&(((kpr_SubObj)preproc)->rOutItemArr[ofs]);
+-    picoos_uint32 c =  p[KPR_OUTITEM_VAL_OFS+0] +
+-                   256*p[KPR_OUTITEM_VAL_OFS+1] +
+-               256*256*p[KPR_OUTITEM_VAL_OFS+2] +
+-           256*256*256*p[KPR_OUTITEM_VAL_OFS+3];
++    picoos_uint32 c = kpr_getUInt32(&p[KPR_OUTITEM_VAL_OFS]);
+ 
+     if (c > KPR_MAX_INT32) {
+         return (c - KPR_MAX_INT32) - 1;
+@@ -552,11 +546,7 @@ extern picoos_int32 picokpr_getProdArrLen(picokpr_Preproc preproc)
+ extern picoos_int32 picokpr_getProdPrefCost(picokpr_Preproc preproc, picokpr_ProdArrOffset ofs)
+ {
+     picoos_uint8 * p = (picoos_uint8 *)&(((kpr_SubObj)preproc)->rProdArr[ofs]);
+-    picoos_uint32 c =  p[KPR_PROD_PRODPREFCOST_OFS+0] +
+-                   256*p[KPR_PROD_PRODPREFCOST_OFS+1] +
+-               256*256*p[KPR_PROD_PRODPREFCOST_OFS+2] +
+-           256*256*256*p[KPR_PROD_PRODPREFCOST_OFS+3];
+-
++    picoos_uint32 c =  kpr_getUInt32(&p[KPR_PROD_PRODPREFCOST_OFS]);
+ 
+     if (c > KPR_MAX_INT32) {
+         return (c - KPR_MAX_INT32) - 1;
+-- 
+2.11.0
+
