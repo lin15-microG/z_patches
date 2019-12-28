@@ -19,8 +19,16 @@ TOPDIR=$PWD
 
 
 clear_set external/svox
+clear_set frameworks/av
+clear_set frameworks/opt/telephony
+clear_set system/libvintf
+clear_set system/netd
+clear_set system/vold
+clear_set lineage-sdk
+clear_set packages/apps/LineageParts
 
 cd $THISDIR
+
 
 
 
