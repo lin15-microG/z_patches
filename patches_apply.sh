@@ -29,12 +29,6 @@ echo "Patching $PWD (Treble patching)"
 patch -p1 < $THISDIR/patch_107_lineage-sdk.patch
 cd $TOPDIR
 
-cd packages/apps/LineageParts
-echo "-"
-echo "Patching $PWD (Treble patching)"
-patch -p1 < $THISDIR/patch_108_LineageParts.patch
-cd $TOPDIR
-
 cd system/libvintf
 echo "-"
 echo "Patching $PWD (Treble patching)"
