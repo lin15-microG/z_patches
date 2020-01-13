@@ -6,11 +6,12 @@ case "$1" in
     ;;
   sign) TESTKEY=false
     ;;
-  *) echo "usage: build_treble test|sign [HWC]"
-     echo "-------------------------------"
+  *) echo "usage: build_treble test|sign [HWC] [root]"
+     echo "------------------------------------------"
      echo "test - build with testkeys (insecure, but compatible)"
      echo "sign - create a signed build"
      echo "HWC  - if passed, include Huawei Camera"
+     echo "root - if passed, include root"
      exit
     ;;   
 esac
@@ -53,7 +54,13 @@ if [ "$2" == "HWC" ]; then
   export ZHWCAM=true
 fi
 
-lunch treble_arm64_avN-userdebug
+if [ "$3" == "root" ]; then
+  echo "Including ROOT..."
+  lunch treble_arm64_avS-userdebug
+else
+  lunch treble_arm64_avN-userdebug
+fi
+
 make WITHOUT_CHECK_API=true systemimage
 
 
