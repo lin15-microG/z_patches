@@ -1,16 +1,24 @@
 #!/bin/bash
 
+##
+## Final file processing
+##
+create_files() {
+  TARGET_FILE=treble_arm64_a_$(date +%Y%m%d)_system.img
+  ln -f $OUT/system.img $OUT/$TARGET_FILE
+#  zip $OUT/$TARGET_FILE.zip $OUT/$TARGET_FILE
+}
+
 # Check parameters
 case "$1" in
   test) TESTKEY=true
     ;;
   sign) TESTKEY=false
     ;;
-  *) echo "usage: build_treble test|sign [HWC] [root]"
-     echo "------------------------------------------"
+  *) echo "usage: build_treble test|sign [root]"
+     echo "-----------------------------------------------------"
      echo "test - build with testkeys (insecure, but compatible)"
      echo "sign - create a signed build"
-     echo "HWC  - if passed, include Huawei Camera"
      echo "root - if passed, include root"
      exit
     ;;   
@@ -49,18 +57,11 @@ else
   export RELEASE_TYPE=UNOFFICIAL-microG
 fi
 
-if [ "$2" == "HWC" ]; then
-  echo "Including HUAWEI camera..."
-  export ZHWCAM=true
-fi
-
-if [ "$3" == "root" ]; then
+if [ "$2" == "root" ]; then
   echo "Including ROOT..."
-  lunch treble_arm64_avS-userdebug
-else
-  lunch treble_arm64_avN-userdebug
+  export WITH_SU=true
 fi
 
-make WITHOUT_CHECK_API=true systemimage
-
+lunch treble_arm64_avN-userdebug
+make WITHOUT_CHECK_API=true systemimage && create_files
 
